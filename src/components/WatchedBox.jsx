@@ -16,13 +16,7 @@ const WatchedBox = ({ tempWatchedData }) => {
       >
         {isOpen2 ? "–" : "+"}
       </button>
-      {isOpen2 && (
-        <>
-          <WatchedSummary watched={watched} />
-
-          <WatchList watched={watched} />
-        </>
-      )}
+      {isOpen2 && <></>}
     </div>
   );
 };

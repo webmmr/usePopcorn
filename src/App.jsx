@@ -22,12 +22,22 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const controller = new AbortController();
+
   function handleSelectMovie(id) {
     setSelectedMovie((selectedId) => (id === selectedId ? null : id));
   }
 
   function handleCloseMovie() {
     setSelectedMovie(null);
+  }
+
+  function handleAddWatched(movie) {
+    setWatched((watched) => [...watched, movie]);
+  }
+
+  function handleDeleteWatched(id) {
+    setWatched(watched.filter((movie) => movie.imdbID !== id));
   }
 
   useEffect(() => {
@@ -37,7 +47,8 @@ export default function App() {
         setError("");
 
         const res = await fetch(
-          `http://www.omdbapi.com/?apikey=${API_KEY}&s=${query}`
+          `http://www.omdbapi.com/?apikey=${API_KEY}&s=${query}`,
+          { signal: controller.signal }
         );
         if (!res.ok)
           throw new Error("Something went wrong with fetching movies");
@@ -47,8 +58,9 @@ export default function App() {
         if (data.Response === "False") throw new Error("Movie not found");
 
         setMovies(data.Search);
+        setError("");
       } catch (err) {
-        setError(err.message);
+        if (err.name !== "AbortError") setError(err.message);
       } finally {
         setIsLoading(false);
       }
@@ -59,7 +71,13 @@ export default function App() {
       setError("");
       return;
     }
+
+    handleCloseMovie();
     getMovies();
+
+    return function () {
+      controller.abort();
+    };
   }, [query]);
 
   return (
@@ -82,11 +100,16 @@ export default function App() {
             <MovieDetails
               selectedMovie={selectedMovie}
               onCloseMovieDetail={handleCloseMovie}
+              onAddWatched={handleAddWatched}
+              watched={watched}
             />
           ) : (
             <>
               <WatchedSummary watched={watched} />
-              <WatchList watched={watched} />
+              <WatchList
+                watched={watched}
+                onDeleteWatched={handleDeleteWatched}
+              />
             </>
           )}
         </Box>

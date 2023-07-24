@@ -1,15 +1,31 @@
+/* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
 import Loader from "./Loader";
 import StarRating from "./StarRating";
 
 const API_KEY = "1a955c05";
 
-const MovieDetails = ({ selectedMovie, onCloseMovieDetail }) => {
+const MovieDetails = ({
+  selectedMovie,
+  onCloseMovieDetail,
+  onAddWatched,
+  watched,
+}) => {
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [userRating, setUserRating] = useState("");
+
+  const isAlreadyRated = watched
+    .map((watch) => watch.imdbID)
+    .includes(selectedMovie);
+
+  const alreadyRated = watched.find(
+    (movie) => movie.imdbID === selectedMovie
+  )?.userRating;
 
   const {
     Title: title,
+    Awards: awards,
     Year: year,
     Poster: poster,
     Runtime: runtime,
@@ -20,6 +36,45 @@ const MovieDetails = ({ selectedMovie, onCloseMovieDetail }) => {
     Director: director,
     Genre: genre,
   } = movie;
+
+  useEffect(() => {
+    if (!title) return;
+    document.title = `Movie | ${title}`;
+
+    return function () {
+      document.title = "usePopcorn";
+    };
+  }, [title]);
+
+  useEffect(() => {
+    function callback(e) {
+      if (e.code === "Escape") {
+        onCloseMovieDetail();
+        console.log("closing");
+      }
+    }
+
+    document.addEventListener("keydown", callback);
+
+    return function () {
+      document.removeEventListener("keydown", callback);
+    };
+  }, [onCloseMovieDetail]);
+
+  function handleAdd() {
+    const newWatchedMovie = {
+      imdbID: selectedMovie,
+      poster,
+      title,
+      imdbRating: Number(imdbRating),
+      runtime: Number(runtime.split(" ").at(0)),
+      year,
+      userRating,
+    };
+
+    onAddWatched(newWatchedMovie);
+    onCloseMovieDetail();
+  }
 
   useEffect(
     function () {
@@ -58,18 +113,34 @@ const MovieDetails = ({ selectedMovie, onCloseMovieDetail }) => {
                 <span>⭐️</span>
                 {imdbRating} IMDb rating
               </p>
-              <p> Released year: {year}</p>
             </div>
           </header>
           <section>
             <div className="rating">
-              <StarRating maxRating={10} size={24} />
+              {!isAlreadyRated ? (
+                <>
+                  <StarRating
+                    maxRating={10}
+                    size={24}
+                    onSetRating={setUserRating}
+                  />
+
+                  {userRating && (
+                    <button className="btn-add" onClick={handleAdd}>
+                      Add to Watched
+                    </button>
+                  )}
+                </>
+              ) : (
+                <p>You have already rated this movie {alreadyRated} ⭐</p>
+              )}
             </div>
             <p>
               <em>{plot}</em>
             </p>
-            <p>Starring {actors}</p>
-            <p>Directed by {director}</p>
+            <p>Starring : {actors}</p>
+            <p>Directed by : {director}</p>
+            {awards !== "N/A" ? <p>{awards}</p> : ""}
           </section>
         </>
       )}

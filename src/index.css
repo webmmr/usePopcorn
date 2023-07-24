@@ -246,6 +246,8 @@ body {
 
 .details header {
   display: flex;
+  align-items: center;
+  background-color: var(--color-background-100);
 }
 
 .details section {
@@ -261,8 +263,8 @@ body {
 
 .details-overview {
   width: 100%;
-  padding: 2.4rem 3rem;
-  background-color: var(--color-background-100);
+  padding: 2rem 3rem;
+
   display: flex;
   flex-direction: column;
   gap: 1.4rem;

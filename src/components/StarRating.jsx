@@ -19,6 +19,7 @@ const StarRating = ({
   className = "",
   messages = [],
   defaultRating = 0,
+  onSetRating,
 }) => {
   const [rating, setRating] = useState(defaultRating);
   const [tempRating, setTempRating] = useState(defaultRating);
@@ -32,6 +33,7 @@ const StarRating = ({
 
   function handleRating(rating) {
     setRating(rating);
+    onSetRating(rating);
   }
 
   return (
